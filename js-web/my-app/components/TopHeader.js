@@ -1,8 +1,27 @@
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Smartphone, ChevronDown, Bell } from 'lucide-react';
+import { Smartphone, ChevronDown, Bell, ShieldAlert, ArrowRight, X } from 'lucide-react';
 import { Button } from './ui';
 
 export function TopHeader() {
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setIsNotifOpen(false);
+      }
+    }
+    if (isNotifOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isNotifOpen]);
+
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
 
@@ -28,9 +47,74 @@ export function TopHeader() {
            SOS Dispatch
         </Button>
 
-        <div className="relative cursor-pointer">
-          <Bell size={20} className="text-slate-500" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
+        {/* Bell Icon with Notification Dropdown */}
+        <div className="relative" ref={notifRef}>
+          <button 
+            onClick={() => setIsNotifOpen(!isNotifOpen)}
+            className="relative cursor-pointer p-1 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <Bell size={20} className="text-slate-500" />
+            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
+          </button>
+
+          {/* Notification Dropdown Panel */}
+          {isNotifOpen && (
+            <div className="absolute right-0 top-full mt-2 w-[420px] bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+              {/* Dropdown Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-900">Notifications</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500 text-white font-bold">1</span>
+                </div>
+                <button 
+                  onClick={() => setIsNotifOpen(false)}
+                  className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Notification Card */}
+              <div className="p-3">
+                <div className="bg-red-50 rounded-lg p-3.5 border border-red-100">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-white border border-red-100 flex items-center justify-center text-red-600 shadow-sm flex-shrink-0">
+                      <ShieldAlert size={20} className="animate-pulse" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-sm font-semibold text-slate-900 leading-tight">Action Required: 1 High-Risk Incident Detected</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-600 text-white font-semibold uppercase tracking-wider">
+                          High Severity Threat
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-500">Detected 8 mins ago • Aarav's A54</span>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                        Local edge heuristics flagged predatory grooming markers in incoming direct messages. Zero unencrypted communication left the child's device.
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" className="h-7 text-[11px] font-semibold bg-white px-3">
+                          Acknowledge
+                        </Button>
+                        <Button variant="destructive" className="h-7 text-[11px] font-semibold gap-1 px-3 shadow-sm">
+                          Triage Incident <ArrowRight size={12} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/30">
+                <button className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors w-full text-center">
+                  View All Notifications
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="h-8 w-px bg-slate-200 mx-2"></div>

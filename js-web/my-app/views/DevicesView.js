@@ -2,13 +2,18 @@
 
 import React, { useState } from 'react';
 import { Card, Switch, Button, Badge } from '../components/ui';
-import { Smartphone, ShieldCheck, Activity, Cpu, Wifi, Zap, PowerOff, Battery, Network, AlertTriangle, Lock, ClipboardList, ShieldAlert, LayoutGrid } from 'lucide-react';
+import { Smartphone, ShieldCheck, Activity, Cpu, Wifi, Zap, PowerOff, Battery, Network, AlertTriangle, Lock, ClipboardList, ShieldAlert, LayoutGrid, ChevronDown } from 'lucide-react';
 
 export function DevicesView() {
   const [autoRestart, setAutoRestart] = useState(true);
   const [bgTask, setBgTask] = useState(true);
   const [ephemeralWipe, setEphemeralWipe] = useState(true);
   const [tamperDetect, setTamperDetect] = useState(true);
+  const [expandedNodes, setExpandedNodes] = useState({ node1: false, node2: false, node3: false });
+
+  const toggleNode = (nodeId) => {
+    setExpandedNodes(prev => ({ ...prev, [nodeId]: !prev[nodeId] }));
+  };
 
   return (
     <div className="max-w-[1440px] mx-auto p-4 lg:p-8 flex flex-col gap-8">
@@ -104,23 +109,36 @@ export function DevicesView() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Node 1: Primary */}
-          <Card className="flex flex-col border-emerald-200 bg-white shadow-sm overflow-hidden min-h-[480px]">
-            <div className="p-5 flex-1 flex flex-col">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex gap-4">
-                  <div className="w-10 h-16 bg-slate-100 rounded-lg border-2 border-slate-300 relative shrink-0">
-                    <div className="absolute inset-x-2 top-1 h-1 bg-slate-200 rounded-full"></div>
-                    <div className="absolute inset-2 top-3 bottom-3 bg-blue-50/50 rounded-sm border border-blue-100 flex items-center justify-center">
-                      <ShieldCheck size={16} className="text-emerald-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-lg leading-tight">Aarav's<br/>Samsung Galaxy<br/>A54</h3>
-                    <div className="text-xs text-slate-500 mt-1">Primary child device •<br/>SM-A546E/DS</div>
+          <Card className="flex flex-col border-emerald-200 bg-white shadow-sm overflow-hidden">
+            {/* Collapsed Header — always visible */}
+            <button 
+              onClick={() => toggleNode('node1')}
+              className="p-5 flex items-center justify-between w-full text-left hover:bg-slate-50/50 transition-colors group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-16 bg-slate-100 rounded-lg border-2 border-slate-300 relative shrink-0">
+                  <div className="absolute inset-x-2 top-1 h-1 bg-slate-200 rounded-full"></div>
+                  <div className="absolute inset-2 top-3 bottom-3 bg-blue-50/50 rounded-sm border border-blue-100 flex items-center justify-center">
+                    <ShieldCheck size={16} className="text-emerald-500" />
                   </div>
                 </div>
-                <Badge variant="success" className="bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Online & Guarding</Badge>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-lg leading-tight">Aarav's Samsung Galaxy A54</h3>
+                  <div className="text-xs text-slate-500 mt-0.5">Primary child device • SM-A546E/DS</div>
+                </div>
               </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="success" className="bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Online & Guarding</Badge>
+                <ChevronDown 
+                  size={18} 
+                  className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${expandedNodes.node1 ? 'rotate-180' : ''}`}
+                />
+              </div>
+            </button>
+
+            {/* Expandable Content */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedNodes.node1 ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="px-5 pb-5 flex-1 flex flex-col">
               
               <div className="grid grid-cols-3 gap-2 mb-4 bg-slate-50/80 rounded-lg p-3 text-xs border border-slate-100">
                 <div>
@@ -161,7 +179,7 @@ export function DevicesView() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 mt-auto">
+              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Edge Classification Pipeline</div>
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-xs font-semibold text-slate-700 leading-tight">Regex Tier 1 + XGBoost Classifier</div>
@@ -184,26 +202,40 @@ export function DevicesView() {
                 <Smartphone size={16} /> Trigger Emergency Lockdown
               </Button>
             </div>
+            </div>
           </Card>
 
           {/* Node 2: Tablet */}
-          <Card className="flex flex-col border-emerald-200 bg-white shadow-sm overflow-hidden min-h-[480px]">
-            <div className="p-5 flex-1 flex flex-col">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-16 bg-slate-100 rounded-lg border-2 border-slate-300 relative shrink-0">
-                    <div className="absolute inset-x-3 top-1 h-1 bg-slate-200 rounded-full"></div>
-                    <div className="absolute inset-2 top-3 bottom-3 bg-blue-50/50 rounded-sm border border-blue-100 flex items-center justify-center">
-                      <ShieldCheck size={16} className="text-emerald-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-lg leading-tight">Aarav's<br/>Lenovo Tab<br/>M10</h3>
-                    <div className="text-xs text-slate-500 mt-1">Study & Gaming<br/>Tablet • TB-328FU</div>
+          <Card className="flex flex-col border-emerald-200 bg-white shadow-sm overflow-hidden">
+            {/* Collapsed Header — always visible */}
+            <button 
+              onClick={() => toggleNode('node2')}
+              className="p-5 flex items-center justify-between w-full text-left hover:bg-slate-50/50 transition-colors group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-16 bg-slate-100 rounded-lg border-2 border-slate-300 relative shrink-0">
+                  <div className="absolute inset-x-3 top-1 h-1 bg-slate-200 rounded-full"></div>
+                  <div className="absolute inset-2 top-3 bottom-3 bg-blue-50/50 rounded-sm border border-blue-100 flex items-center justify-center">
+                    <ShieldCheck size={16} className="text-emerald-500" />
                   </div>
                 </div>
-                <Badge variant="success" className="bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Online & Guarding</Badge>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-lg leading-tight">Aarav's Lenovo Tab M10</h3>
+                  <div className="text-xs text-slate-500 mt-0.5">Study & Gaming Tablet • TB-328FU</div>
+                </div>
               </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="success" className="bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Online & Guarding</Badge>
+                <ChevronDown 
+                  size={18} 
+                  className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${expandedNodes.node2 ? 'rotate-180' : ''}`}
+                />
+              </div>
+            </button>
+
+            {/* Expandable Content */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedNodes.node2 ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="px-5 pb-5 flex-1 flex flex-col">
               
               <div className="grid grid-cols-3 gap-2 mb-4 bg-slate-50/80 rounded-lg p-3 text-xs border border-slate-100">
                 <div>
@@ -243,7 +275,7 @@ export function DevicesView() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 mt-auto">
+              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Edge Classification Pipeline</div>
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-xs font-semibold text-slate-700 leading-tight">Lightweight Regex Parser</div>
@@ -266,26 +298,40 @@ export function DevicesView() {
                 <Lock size={16} /> Set Sleep Mode Lock
               </Button>
             </div>
+            </div>
           </Card>
 
           {/* Node 3: Secondary Offline */}
-          <Card className="flex flex-col border-amber-200 bg-white shadow-sm overflow-hidden min-h-[480px]">
-            <div className="p-5 flex-1 flex flex-col opacity-90 hover:opacity-100 transition-opacity">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex gap-4">
-                  <div className="w-10 h-16 bg-slate-100 rounded-lg border-2 border-slate-300 relative shrink-0 opacity-70">
-                    <div className="absolute inset-x-2 top-1 h-1 bg-slate-200 rounded-full"></div>
-                    <div className="absolute inset-2 top-3 bottom-3 bg-slate-200 rounded-sm border border-slate-300 flex items-center justify-center">
-                      <PowerOff size={16} className="text-slate-400" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-lg leading-tight">Ananya's Redmi<br/>Note 12</h3>
-                    <div className="text-xs text-slate-500 mt-1">Secondary child node •<br/>23021RAA2Y</div>
+          <Card className="flex flex-col border-amber-200 bg-white shadow-sm overflow-hidden">
+            {/* Collapsed Header — always visible */}
+            <button 
+              onClick={() => toggleNode('node3')}
+              className="p-5 flex items-center justify-between w-full text-left hover:bg-slate-50/50 transition-colors group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-16 bg-slate-100 rounded-lg border-2 border-slate-300 relative shrink-0 opacity-70">
+                  <div className="absolute inset-x-2 top-1 h-1 bg-slate-200 rounded-full"></div>
+                  <div className="absolute inset-2 top-3 bottom-3 bg-slate-200 rounded-sm border border-slate-300 flex items-center justify-center">
+                    <PowerOff size={16} className="text-slate-400" />
                   </div>
                 </div>
-                <Badge variant="warning" className="bg-amber-50 text-amber-800 border-amber-200 whitespace-nowrap"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Idle / Standby</Badge>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-lg leading-tight">Ananya's Redmi Note 12</h3>
+                  <div className="text-xs text-slate-500 mt-0.5">Secondary child node • 23021RAA2Y</div>
+                </div>
               </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="warning" className="bg-amber-50 text-amber-800 border-amber-200 whitespace-nowrap"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Idle / Standby</Badge>
+                <ChevronDown 
+                  size={18} 
+                  className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${expandedNodes.node3 ? 'rotate-180' : ''}`}
+                />
+              </div>
+            </button>
+
+            {/* Expandable Content */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedNodes.node3 ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="px-5 pb-5 flex-1 flex flex-col">
               
               <div className="grid grid-cols-3 gap-2 mb-4 bg-slate-50/80 rounded-lg p-3 text-xs border border-slate-100">
                 <div>
@@ -325,7 +371,7 @@ export function DevicesView() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 mt-auto opacity-70">
+              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 opacity-70">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Edge Classification Pipeline</div>
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-xs font-semibold text-slate-700 leading-tight">Tier 1 Regex Parser</div>
@@ -346,84 +392,7 @@ export function DevicesView() {
                 <Lock size={16} /> Re-authenticate
               </Button>
             </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Policy section */}
-      <div className="mt-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Edge Node Daemon Policy & Enforcement</h2>
-              <p className="text-sm text-slate-500 mt-1 max-w-2xl">Cryptographic security posture and system permission rules applied immediately to all connected Android nodes.</p>
-            </div>
-          </div>
-          <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] uppercase font-bold shrink-0 self-start md:self-auto px-3 py-1">PO-POL-ENFORCED-7729</Badge>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Toggle 1 */}
-          <Card className="p-6 flex items-start gap-4 border-slate-200 bg-white hover:border-blue-200 transition-colors cursor-pointer group">
-             <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-blue-600 shrink-0 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-               <PowerOff size={20} />
-             </div>
-             <div className="flex-1 min-w-0">
-               <div className="flex items-start justify-between mb-2">
-                 <h3 className="text-base font-semibold text-slate-900 tracking-tight">Auto-restart Daemon on Boot</h3>
-                 <Switch checked={autoRestart} onChange={setAutoRestart} />
-               </div>
-               <p className="text-xs text-slate-500 leading-relaxed mb-4">Spawns SafeNET persistent worker service automatically upon device cold-boot and restarts within 250ms if terminated by aggressive OEM memory cleaners.</p>
-               <p className="text-xs font-mono font-medium text-emerald-600">Status: Enforced via Knox / Device Admin</p>
-             </div>
-          </Card>
-
-          {/* Toggle 2 */}
-          <Card className="p-6 flex items-start gap-4 border-slate-200 bg-white hover:border-blue-200 transition-colors cursor-pointer group">
-             <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-blue-600 shrink-0 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
-             </div>
-             <div className="flex-1 min-w-0">
-               <div className="flex items-start justify-between mb-2">
-                 <h3 className="text-base font-semibold text-slate-900 tracking-tight">Background Task Exemption</h3>
-                 <Switch checked={bgTask} onChange={setBgTask} />
-               </div>
-               <p className="text-xs text-slate-500 leading-relaxed mb-4">Whitelists SafeNET binary from Android Power Optimization, Doze mode network cuts, and vendor-specific memory kills (MIUI, Samsung OneUI).</p>
-               <p className="text-xs font-mono font-medium text-emerald-600">Status: Verified active on 3/3 devices</p>
-             </div>
-          </Card>
-          
-          {/* Toggle 3 */}
-          <Card className="p-6 flex items-start gap-4 border-slate-200 bg-white hover:border-blue-200 transition-colors cursor-pointer group">
-             <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-blue-600 shrink-0 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-               <ClipboardList size={20} />
-             </div>
-             <div className="flex-1 min-w-0">
-               <div className="flex items-start justify-between mb-2">
-                 <h3 className="text-base font-semibold text-slate-900 tracking-tight">Ephemeral Cache Wipe Interval</h3>
-                 <Switch checked={ephemeralWipe} onChange={setEphemeralWipe} />
-               </div>
-               <p className="text-xs text-slate-500 leading-relaxed mb-4">Guarantees strict zero-retention compliance. In-flight message strings are parsed solely in RAM, transformed into anonymous embeddings, and wiped instantly.</p>
-               <p className="text-xs font-mono font-medium text-slate-600 flex items-center gap-2">Interval: <span className="text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded">Immediate on Vectorization</span></p>
-             </div>
-          </Card>
-
-          {/* Toggle 4 */}
-          <Card className="p-6 flex items-start gap-4 border-slate-200 bg-white hover:border-blue-200 transition-colors cursor-pointer group">
-             <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-blue-600 shrink-0 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-               <ShieldAlert size={20} />
-             </div>
-             <div className="flex-1 min-w-0">
-               <div className="flex items-start justify-between mb-2">
-                 <h3 className="text-base font-semibold text-slate-900 tracking-tight">Tamper Detection & SOS Relay</h3>
-                 <Switch checked={tamperDetect} onChange={setTamperDetect} />
-               </div>
-               <p className="text-xs text-slate-500 leading-relaxed mb-4">Detects Accessibility Service revocation, SIM removal, or ADB debug connection. Immediately issues high-priority silent notification to primary guardian.</p>
-               <p className="text-xs font-mono font-medium text-emerald-600">Status: Silent SOS Alert Armed</p>
-             </div>
           </Card>
         </div>
       </div>
