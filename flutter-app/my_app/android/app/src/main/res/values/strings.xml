@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_description">SafeNET Digital Guardrail needs accessibility permission to scan visible content for bullying, threats, and toxic messages in real-time to keep you safe.</string>
+</resources>
+

@@ -1,0 +1,29 @@
+name: safenet
+description: "SafeNET — a calm, protective safety companion app for teens."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # Bundles the "Plus Jakarta Sans" family to match the web app's --font-sans.
+  google_fonts: ^6.2.1
+  # Powers tel:// links (Call 988) and https:// links (privacy page).
+  url_launcher: ^6.3.1
+  http: ^1.6.0
+  mobile_scanner: ^7.4.1
+  firebase_core: ^4.14.0
+  cloud_firestore: ^6.9.0
+  firebase_auth: ^6.6.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
