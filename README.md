@@ -31,14 +31,21 @@ The Parent App serves as the command center for parents or guardians, providing 
 * **Firebase Authentication & Sync:** Securely links the parent's account to the child's device pairing profile using Firebase Auth and Firestore for real-time state synchronization.
 
 
+## 🚀 Quick Start & Testing Guide
 
-📥 App Installation & Setup Guide
-To get the Bal Suraksha Parent/Child Companion App up and running on your device, follow these steps after downloading the build:
+### 1. App Download & Installation
+* **Download Link:** [Get the APK Build Here](https://api.codemagic.io/artifacts/.eJwVwc2SgiAAAOB36e5Mq_TjoYNFLKRmaZrrhXE1QayEUSp5-p39vhnz_m2VFMCitPIDFgIl1hTjK2O6_SIO6jhcwGjifKjd6mNWkRZSIbSTi9cKLE8GHIZHa-1EPklsO9EYFSohtZ_RfXcOGj-D_twkKb8iksTBFuDeLNsgE2X_0k1onUouj4t8IhftulohE9xuTjNAyIh4FvYHNe5ZGZqf81pG7kjNsWsrFk3kDjwxVCRL-33hl7dSh7uTf33H6dIh77i-_MBn6yWYjytpwsLcE9h7lkLbQ8XnmLvHB6masSsF_caxaFI9yLc-2Ekq1o9cQ2b_AmrVl4-32cz-AEDEZCw.nrydqgs95mBtDGk0buMwc2SVuHc)
 
-Download Link: https://api.codemagic.io/artifacts/.eJwVwc2SgiAAAOB36e5Mq_TjoYNFLKRmaZrrhXE1QayEUSp5-p39vhnz_m2VFMCitPIDFgIl1hTjK2O6_SIO6jhcwGjifKjd6mNWkRZSIbSTi9cKLE8GHIZHa-1EPklsO9EYFSohtZ_RfXcOGj-D_twkKb8iksTBFuDeLNsgE2X_0k1onUouj4t8IhftulohE9xuTjNAyIh4FvYHNe5ZGZqf81pG7kjNsWsrFk3kDjwxVCRL-33hl7dSh7uTf33H6dIh77i-_MBn6yWYjytpwsLcE9h7lkLbQ8XnmLvHB6masSsF_caxaFI9yLc-2Ekq1o9cQ2b_AmrVl4-32cz-AEDEZCw.nrydqgs95mBtDGk0buMwc2SVuHc
+### 2. Required Device Permissions
+For the background monitoring shield to function properly, please configure the following settings after installation:
+* **Accessibility Shield:** Go to **Accessibility** $\rightarrow$ Enable **Digital Guardrail ScreenShield** *(If prompted with "Restricted - Access Required", allow restricted settings first)*.
+* **Special Permissions:** Navigate to **Special Permissions** $\rightarrow$ Turn on **Notification Permission** and **Running in Background**.
+* **Battery Settings:** Ensure background running/execution is allowed to prevent the monitoring service from sleeping.
 
-Accessibility Shield: Go to Accessibility settings on your device and turn on the Digital Guardrail ScreenShield. If it shows a “Restricted - Access Required” prompt, enable restricted permissions first.
+### 3. Testing Credentials (Firebase Auth)
+Use the following pre-configured test accounts to log into the Child and Parent app flows during evaluation:
 
-Permissions Setup: Navigate to Special Permissions and ensure that both Notification Permission and Running in Background permissions are toggled on.
-
-Battery Optimization: Open your device's Battery Settings and enable background execution/running permissions for the app to ensure uninterrupted, real-time threat monitoring.
+| Role | Email Address |
+| :--- | :--- |
+| **Child App Account** | `child@safenet.in` |
+| **Parent App Account** | `parent@safenet.in` |
