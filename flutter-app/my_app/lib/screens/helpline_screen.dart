@@ -61,19 +61,30 @@ class _HelplineScreenState extends State<HelplineScreen> {
   String? _openAccordionId;
   BreathingPhase _breathingPhase = BreathingPhase.inhale;
   bool _breathingPaused = false;
+  bool _hasStarted = false;
   Timer? _tickTimer;
   int _secondsRemaining = 4;
 
   @override
   void initState() {
     super.initState();
-    _startTicker();
+    // Wait for user to manually start
   }
 
   @override
   void dispose() {
     _tickTimer?.cancel();
     super.dispose();
+  }
+
+  void _startExercise() {
+    setState(() {
+      _hasStarted = true;
+      _breathingPaused = false;
+      _breathingPhase = BreathingPhase.inhale;
+      _secondsRemaining = BreathingPhase.inhale.duration.inSeconds;
+    });
+    _startTicker();
   }
 
   void _startTicker() {
@@ -167,6 +178,8 @@ class _HelplineScreenState extends State<HelplineScreen> {
             phase: _breathingPhase,
             secondsRemaining: _secondsRemaining,
             paused: _breathingPaused,
+            hasStarted: _hasStarted,
+            onStart: _startExercise,
             onTogglePause: _togglePauseExercise,
           ),
           const SizedBox(height: 8),
@@ -523,12 +536,16 @@ class _GroundingExercise extends StatelessWidget {
     required this.phase,
     required this.secondsRemaining,
     required this.paused,
+    required this.hasStarted,
+    required this.onStart,
     required this.onTogglePause,
   });
 
   final BreathingPhase phase;
   final int secondsRemaining;
   final bool paused;
+  final bool hasStarted;
+  final VoidCallback onStart;
   final VoidCallback onTogglePause;
 
   @override
@@ -590,7 +607,7 @@ class _GroundingExercise extends StatelessWidget {
             height: 192,
             child: Center(
               child: AnimatedScale(
-                scale: phase.scale,
+                scale: hasStarted ? phase.scale : 1.0,
                 // Match the AnimatedScale duration to the current phase so it sweeps perfectly
                 duration: phase.duration,
                 curve: Curves.linear,
@@ -613,13 +630,13 @@ class _GroundingExercise extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          phase.label,
+                          !hasStarted ? 'Ready' : phase.label,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: AppColors.secondary,
                           ),
                         ),
-                        if (phase.badge.isNotEmpty)
+                        if (hasStarted && phase.badge.isNotEmpty)
                           Text(
                             '${secondsRemaining}s',
                             style: TextStyle(
@@ -637,7 +654,7 @@ class _GroundingExercise extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           TextButton(
-            onPressed: onTogglePause,
+            onPressed: !hasStarted ? onStart : onTogglePause,
             style: TextButton.styleFrom(
               backgroundColor: AppColors.surfaceTint,
               foregroundColor: AppColors.text,
@@ -647,7 +664,9 @@ class _GroundingExercise extends StatelessWidget {
               ),
             ),
             child: Text(
-              paused ? '▷ Resume Exercise' : '↺ Pause Exercise',
+              !hasStarted 
+                  ? '▷ Start Exercise' 
+                  : paused ? '▷ Resume Exercise' : '↺ Pause Exercise',
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
           ),

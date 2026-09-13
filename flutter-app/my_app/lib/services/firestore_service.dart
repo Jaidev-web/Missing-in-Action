@@ -58,4 +58,17 @@ class FirestoreService {
       print('Error removing guardian: $e');
     }
   }
+
+  /// Saves an SOS event with GPS coordinates.
+  Future<void> saveSosLocation(double lat, double lng) async {
+    try {
+      await _userDoc.collection('sos_events').add({
+        'timestamp': FieldValue.serverTimestamp(),
+        'location': GeoPoint(lat, lng),
+        'resolved': false,
+      });
+    } catch (e) {
+      print('Error saving SOS location: $e');
+    }
+  }
 }

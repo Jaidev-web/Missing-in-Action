@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -141,6 +142,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
         }
 
+        Future<void> _testPanicGesture() async {
+          // 1. Check permissions
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+            if (permission == LocationPermission.denied) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Location permissions denied')));
+              return;
+            }
+          }
+          
+          // 2. Get location
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Capturing GPS location...')));
+              
+          try {
+            Position position = await Geolocator.getCurrentPosition(
+                desiredAccuracy: LocationAccuracy.high);
+                
+            // 3. Save to firebase
+            await _firestoreService.saveSosLocation(position.latitude, position.longitude);
+            
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('SOS Alert sent with live GPS!')));
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to get location: $e')));
+          }
+        }
+
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Column(
@@ -194,6 +230,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 panicGestureType: _panicGestureType,
                 onChanged: (v) => _firestoreService.updateSetting('panicGesture', v),
                 onEdit: _editPanicGesture,
+                onTest: _testPanicGesture,
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
@@ -908,12 +945,14 @@ class _PanicGestureCard extends StatelessWidget {
     required this.panicGestureType,
     required this.onChanged,
     required this.onEdit,
+    required this.onTest,
   });
 
   final bool panicGesture;
   final String panicGestureType;
   final ValueChanged<bool> onChanged;
   final VoidCallback onEdit;
+  final VoidCallback onTest;
 
   @override
   Widget build(BuildContext context) {
@@ -973,21 +1012,42 @@ class _PanicGestureCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              TextButton(
-                onPressed: onEdit,
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.surfaceTint,
-                  foregroundColor: AppColors.primary,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
+              Column(
+                children: [
+                  TextButton(
+                    onPressed: onEdit,
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.surfaceTint,
+                      foregroundColor: AppColors.primary,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    child: const Text(
+                      'Edit',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Edit',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: onTest,
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.alertBg,
+                      foregroundColor: AppColors.alert,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    child: const Text(
+                      'Simulate',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

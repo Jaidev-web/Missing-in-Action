@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 
 import 'app.dart';
@@ -75,22 +76,67 @@ class GuardrailEngine {
   }
 
   Future<void> _sendToFastAPI(String text, String senderApp) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
     try {
+      // 1. Fetch live user settings to check Shield and Bedtime Mode
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final data = doc.data() ?? {};
+      
+      final bool realTimeShield = data['realTimeShield'] ?? true;
+      final bool bedtimeMode = data['bedtimeMode'] ?? true;
+      
+      // Feature 1: Real-Time Screen Shield Toggle
+      if (!realTimeShield) {
+        debugPrint("🛡️ Real-Time Shield disabled. Skipping analysis.");
+        return;
+      }
+      
+      // Feature 2: Quiet Bedtime Mode Time-Gate (9:30 PM to 7:00 AM)
+      bool isBedtime = false;
+      if (bedtimeMode) {
+        final now = DateTime.now();
+        if (now.hour > 21 || (now.hour == 21 && now.minute >= 30) || now.hour < 7) {
+          isBedtime = true;
+          debugPrint("🌙 Quiet Bedtime Mode ACTIVE. We will log the threat silently.");
+        }
+      }
+
+      // 2. Call FastAPI Backend
       final result = await ThreatApiService.analyzeThreat(
         text: text,
-        childId: FirebaseAuth.instance.currentUser?.uid ?? 'unknown_child',
+        childId: user.uid,
         senderApp: senderApp,
       );
 
       debugPrint("Backend Response: $result");
       
-      if (result["is_threat"] == true) {
-        // trigger parent alert / notification
+      if (result["is_threat"] == true || result["classification"] == "toxic") {
         debugPrint("⚠️ ${result['risk_level']} risk: ${result['threat_score']}%");
-        // TODO: Update Firebase here with the threat event
+        
+        // Save to Firebase so the Guardian sees it
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('threat_events')
+            .add({
+          'timestamp': FieldValue.serverTimestamp(),
+          'senderApp': senderApp,
+          'text': text,
+          'risk_level': result['risk_level'],
+          'isBedtimeMuted': isBedtime, // Flag it so the dashboard knows it was muted
+        });
+        
+        // 3. Trigger Local Alert (unless it's bedtime!)
+        if (!isBedtime) {
+          debugPrint("🚨 TRIGGERING FULL SCREEN OVERLAY AND VIBRATION!");
+          // Since we are in Flutter context, we can pop a dialog if the app is open
+          // Or fire a local notification. For now, we print to console.
+        }
       }
     } catch (e) {
-      debugPrint("Failed to reach FastAPI backend: $e");
+      debugPrint("Failed to reach FastAPI backend or Firestore: $e");
     }
   }
 }
