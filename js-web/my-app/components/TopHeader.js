@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Smartphone, ChevronDown, Bell, ShieldAlert, ArrowRight, X } from 'lucide-react';
 import { Button } from './ui';
+import { auth } from '../lib/firebase';
 
 export function TopHeader({ onLogout }) {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -42,6 +43,26 @@ export function TopHeader({ onLogout }) {
 
       {/* Right Actions */}
       <div className="flex items-center gap-4">
+        <Button 
+          onClick={async () => {
+            const uid = auth?.currentUser?.uid || 'SM-A546E-01';
+            await fetch('/api/threat', {
+              method: 'POST',
+              body: JSON.stringify({
+                child_id: uid,
+                text: "Hey, don't tell your parents about our chat. Delete this message.",
+                risk_level: "CRITICAL",
+                threat_score: 95.2,
+                senderApp: "Instagram"
+              })
+            });
+          }}
+          variant="outline" 
+          className="h-9 font-semibold shadow-sm flex items-center gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+        >
+           <ShieldAlert size={16} />
+           Demo Threat
+        </Button>
         <Button variant="destructive" className="h-9 font-semibold shadow-sm flex items-center gap-2">
            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
            SOS Dispatch

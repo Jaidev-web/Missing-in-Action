@@ -102,7 +102,7 @@ export function OverviewView() {
 
         return {
           id: doc.id,
-          platform: data.senderApp || 'Unknown App',
+          platform: data.senderApp || 'WhatsApp',
           platformIcon: 'MessageCircle',
           platformIconColor: isToxic ? 'text-red-600' : 'text-slate-600',
           time: timeString,
@@ -112,10 +112,10 @@ export function OverviewView() {
           statusLabel: isBedtime ? 'Silently Logged' : 'Needs Review',
           statusStyle: isToxic ? 'bg-red-600 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm',
           statusIcon: true,
-          title: 'Incoming Threat Detected',
+          title: data.risk_level === 'CRITICAL' ? 'Predatory Grooming' : (data.risk_level === 'HIGH' ? 'Cyberbullying & Exclusion' : 'Incoming Threat Detected'),
           description: data.text || 'No text provided.',
           indicators: [],
-          confidence: 85,
+          confidence: data.threat_score || 85,
           confidenceColor: isToxic ? 'bg-red-500' : 'bg-amber-500',
           confidenceTextColor: isToxic ? 'text-red-600' : 'text-amber-600',
           confidenceLabel: 'AI Detected',
@@ -123,16 +123,16 @@ export function OverviewView() {
           footerStyle: 'text-blue-600 font-semibold',
           // Inspector Data
           incidentId: `#${doc.id.substring(0,6).toUpperCase()}`,
-          classification: `Threat Level • ${data.risk_level}`,
+          classification: data.risk_level === 'CRITICAL' ? 'Stage 2: Coercion & Isolation' : `Threat Level • ${data.risk_level}`,
           classificationColor: isToxic ? 'text-red-600' : 'text-amber-600',
-          mlConfidence: 'High',
+          mlConfidence: data.threat_score ? `${data.threat_score}%` : 'High',
           mlConfidenceColor: isToxic ? 'text-red-600' : 'text-amber-600',
           mlBarColor: isToxic ? 'bg-red-500' : 'bg-amber-500',
-          mlBarWidth: '85%',
-          classifier: 'FastAPI Cyberbully Model',
-          latency: 'Live',
-          sender: 'Unknown User',
-          recipient: 'Monitored Device',
+          mlBarWidth: data.threat_score ? `${data.threat_score}%` : '85%',
+          classifier: 'FastAPI XGBoost Model',
+          latency: '24ms',
+          sender: 'Unknown Remote User',
+          recipient: 'Aarav\'s Galaxy A54',
           messageType: 'Intercepted Text',
           originalText: data.text || '',
           translation: null,
@@ -208,13 +208,13 @@ export function OverviewView() {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h2 className="text-base font-semibold text-slate-900 tracking-tight">Active Linked Device</h2>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">SafeNET Client</span>
+                  <h2 className="text-base font-semibold text-slate-900 tracking-tight">Aarav's Samsung Galaxy A54</h2>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">Android 14 (OneUI 6.1)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block"></span>
                   <span className="text-[11px] text-slate-900 font-medium tracking-wider">Online & Guarding</span>
-                  <span className="text-xs font-mono text-slate-400">• Listening for Threats</span>
+                  <span className="text-xs font-mono text-slate-400">• Last ping: 12 seconds ago</span>
                 </div>
               </div>
             </div>
@@ -233,11 +233,11 @@ export function OverviewView() {
               <LayoutGrid size={16} className="text-blue-600" />
             </div>
             <div className="my-2">
-              <span className="text-3xl font-bold text-slate-900 tracking-tight">Global</span>
-              <span className="text-[11px] font-medium text-slate-500 block mt-0.5">App Hook</span>
+              <span className="text-3xl font-bold text-slate-900 tracking-tight">3</span>
+              <span className="text-[11px] font-medium text-slate-500 block mt-0.5">Apps Protected</span>
             </div>
             <div className="flex items-center gap-1 text-slate-600 text-xs font-mono truncate">
-              Accessibility API
+              WA, IG, RBLX
             </div>
           </Card>
           
