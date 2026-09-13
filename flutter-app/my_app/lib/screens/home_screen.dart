@@ -284,7 +284,9 @@ class _StatusGlow extends StatelessWidget {
                 ],
               ),
             ),
-          ],
+          ),
+        ),
+      ],
         ),
       ),
     );

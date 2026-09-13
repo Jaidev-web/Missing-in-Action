@@ -1,21 +1,38 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ThreatApiService {
-  // TODO: Replace with your actual server IP when deploying or testing on a physical device.
-  // For Android emulator pointing to localhost, use 10.0.2.2
-  static const String baseUrl = "http://10.0.2.2:8000";
+  static const String baseUrl = "https://cyberbully-check.tail39b525.ts.net";
+
+  static Future<Map<String, String>> _getHeaders() async {
+    final headers = {"Content-Type": "application/json"};
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final token = await user.getIdToken();
+        if (token != null) {
+          headers["Authorization"] = "Bearer $token";
+        }
+      }
+    } catch (e) {
+      print("Error getting Firebase token: $e");
+    }
+    return headers;
+  }
 
   static Future<Map<String, dynamic>> analyzeThreat({
     required String text,
     required String childId,
     required String senderApp,
   }) async {
+    final headers = await _getHeaders();
     final response = await http.post(
-      Uri.parse("$baseUrl/analyze-threat"),
-      headers: {"Content-Type": "application/json"},
+      Uri.parse("$baseUrl/predict"),
+      headers: headers,
       body: jsonEncode({
         "text": text,
+        // Including these in case you add logging to the backend later
         "child_id": childId,
         "sender_app": senderApp,
       }),
@@ -30,9 +47,10 @@ class ThreatApiService {
 
   static Future<Map<String, dynamic>> analyzeBatch(
       List<Map<String, String>> messages) async {
+    final headers = await _getHeaders();
     final response = await http.post(
-      Uri.parse("$baseUrl/analyze-batch"),
-      headers: {"Content-Type": "application/json"},
+      Uri.parse("$baseUrl/predict_batch"),
+      headers: headers,
       body: jsonEncode({"messages": messages}),
     );
 

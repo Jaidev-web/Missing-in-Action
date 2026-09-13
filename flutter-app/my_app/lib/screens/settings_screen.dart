@@ -104,6 +104,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           );
+        }
+
         void _editPanicGesture() {
           showDialog(
             context: context,
