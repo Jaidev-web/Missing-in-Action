@@ -3,11 +3,11 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDL2lOLmAgpNm9FBvuAtTqtFmdO8antZtU",
-  appId: "1:716204277840:web:aa75f58a487ad808559155",
-  messagingSenderId: "716204277840",
-  projectId: "safenet-7d829",
-  storageBucket: "safenet-7d829.firebasestorage.app",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_SENDER_ID,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
