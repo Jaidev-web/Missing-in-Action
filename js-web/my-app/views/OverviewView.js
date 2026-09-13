@@ -189,6 +189,10 @@ export function OverviewView() {
     }
   };
 
+  const isDefault = incidents.length === 1 && incidents[0].id === 'placeholder';
+  const totalFlags = isDefault ? 0 : incidents.length;
+  const criticalFlags = isDefault ? 0 : incidents.filter(i => i.tagLabel === 'HIGH' || i.tagLabel === 'CRITICAL' || i.tagLabel === 'Flagged').length;
+
   return (
     <div className="max-w-[1440px] mx-auto p-4 lg:p-8 flex flex-col gap-6">
 
@@ -204,19 +208,19 @@ export function OverviewView() {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h2 className="text-base font-semibold text-slate-900 tracking-tight">Aarav's Samsung Galaxy A54</h2>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">Android 14 (OneUI 6.1)</span>
+                  <h2 className="text-base font-semibold text-slate-900 tracking-tight">Active Linked Device</h2>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">SafeNET Client</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block"></span>
                   <span className="text-[11px] text-slate-900 font-medium tracking-wider">Online & Guarding</span>
-                  <span className="text-xs font-mono text-slate-400">• Last ping: 12 seconds ago</span>
+                  <span className="text-xs font-mono text-slate-400">• Listening for Threats</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-600">
               <Zap size={14} />
-              <span className="text-xs font-mono font-semibold">78% Charging</span>
+              <span className="text-xs font-mono font-semibold">Active</span>
             </div>
           </div>
         </Card>
@@ -229,39 +233,39 @@ export function OverviewView() {
               <LayoutGrid size={16} className="text-blue-600" />
             </div>
             <div className="my-2">
-              <span className="text-3xl font-bold text-slate-900 tracking-tight">3</span>
-              <span className="text-[11px] font-medium text-slate-500 block mt-0.5">Apps Protected</span>
+              <span className="text-3xl font-bold text-slate-900 tracking-tight">Global</span>
+              <span className="text-[11px] font-medium text-slate-500 block mt-0.5">App Hook</span>
             </div>
             <div className="flex items-center gap-1 text-slate-600 text-xs font-mono truncate">
-              WA, IG, RBLX
+              Accessibility API
             </div>
           </Card>
           
           <Card className="p-4 border-slate-200 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-slate-500 tracking-wider uppercase">Flags</span>
-              <Flag size={16} className="text-red-600" />
+              <Flag size={16} className={criticalFlags > 0 ? "text-red-600" : "text-emerald-600"} />
             </div>
             <div className="my-2">
-              <span className="text-3xl font-bold text-red-600 tracking-tight">1</span>
-              <span className="text-[11px] font-medium text-red-600 block mt-0.5">Critical Threat</span>
+              <span className={`text-3xl font-bold tracking-tight ${criticalFlags > 0 ? "text-red-600" : "text-emerald-600"}`}>{totalFlags}</span>
+              <span className={`text-[11px] font-medium block mt-0.5 ${criticalFlags > 0 ? "text-red-600" : "text-emerald-600"}`}>Total Threats</span>
             </div>
             <div className="text-xs font-mono text-slate-500 truncate">
-              XGBoost: 91%
+              {criticalFlags} Critical Level
             </div>
           </Card>
-          
+
           <Card className="p-4 border-slate-200 flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-slate-500 tracking-wider uppercase">Integrity</span>
+              <span className="text-[11px] font-medium text-slate-500 tracking-wider uppercase">Filter</span>
               <ShieldCheck size={16} className="text-emerald-600" />
             </div>
             <div className="my-2">
-              <span className="text-3xl font-bold text-slate-900 tracking-tight">0</span>
-              <span className="text-[11px] font-medium text-emerald-600 block mt-0.5">Tamper Events</span>
+              <span className="text-3xl font-bold text-emerald-600 tracking-tight">On</span>
+              <span className="text-[11px] font-medium text-emerald-600 block mt-0.5">XGBoost ML</span>
             </div>
             <div className="text-xs font-mono text-slate-500 truncate">
-              Daemon Secure
+              Zero Retention
             </div>
           </Card>
         </div>

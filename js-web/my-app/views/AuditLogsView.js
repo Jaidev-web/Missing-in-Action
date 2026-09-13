@@ -1,8 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button } from '../components/ui';
 import { ShieldCheck, Lock, Search, Smartphone, ShieldAlert, AlertTriangle, Eye, EyeOff, Activity, Cpu, Code } from 'lucide-react';
-
+import { db } from '../lib/firebase';
+import { collectionGroup, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 export function AuditLogsView() {
+  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    const q = query(
+      collectionGroup(db, 'threat_events'),
+      orderBy('timestamp', 'desc'),
+      limit(20)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetched = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const timestamp = data.timestamp?.toDate();
+        const timeString = timestamp ? timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' IST' : 'Live';
+        const dateString = timestamp ? timestamp.toLocaleDateString([], { day: '2-digit', month: 'short' }) : 'Today';
+        
+        const isCritical = data.risk_level === 'CRITICAL';
+        const isHigh = data.risk_level === 'HIGH';
+        const isMedium = data.risk_level === 'MEDIUM';
+        
+        let badgeVariant = 'success';
+        let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        let badgeDot = 'bg-emerald-500';
+        let badgeLabel = 'Monitored';
+        
+        if (isCritical) {
+          badgeVariant = 'critical';
+          badgeClass = 'bg-red-50 text-red-700 border-red-200';
+          badgeDot = 'bg-red-500';
+          badgeLabel = 'Threat Detected';
+        } else if (isHigh || isMedium) {
+          badgeVariant = 'warning';
+          badgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
+          badgeDot = 'bg-amber-500';
+          badgeLabel = 'Flagged Content';
+        }
+
+        return {
+          id: doc.id,
+          timeString,
+          dateString,
+          deviceNode: 'Linked Device',
+          nodeUid: data.child_id || 'SM-A546E-01',
+          badgeVariant,
+          badgeClass,
+          badgeDot,
+          badgeLabel,
+          title: isCritical ? 'Predatory Grooming' : (isHigh ? 'Cyberbullying & Exclusion' : (isMedium ? 'Inappropriate Content' : 'Safe Content')),
+          description: data.text || 'Message Analyzed',
+          titleColor: isCritical || isHigh ? 'text-red-700' : 'text-slate-900',
+          score: data.threat_score ? `${data.threat_score}%` : 'N/A',
+          engine: 'XGBoost TF-IDF (Cloud)',
+        };
+      });
+      setLogs(fetched);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <div className="max-w-[1440px] mx-auto p-4 lg:p-8">
       
@@ -76,135 +137,53 @@ export function AuditLogsView() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               
-              {/* Row 1: Critical */}
-              <tr className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-4">
-                  <div className="font-semibold text-slate-900">14:22:18 IST</div>
-                  <div className="text-xs text-slate-500">Today • 03 May</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex items-start gap-2">
-                    <Smartphone size={14} className="text-blue-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-slate-900">Aarav's Galaxy A54</div>
-                      <div className="text-xs font-mono text-slate-400">UID: SM-A546E-01</div>
+              {logs.map((log) => (
+                <tr key={log.id} className={`hover:bg-slate-50 transition-colors ${log.badgeVariant === 'warning' ? 'bg-amber-50/10' : ''}`}>
+                  <td className="px-5 py-4">
+                    <div className="font-semibold text-slate-900">{log.timeString}</div>
+                    <div className="text-xs text-slate-500">Today • {log.dateString}</div>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="flex items-start gap-2">
+                      <Smartphone size={14} className="text-blue-600 mt-0.5" />
+                      <div>
+                        <div className="font-medium text-slate-900">{log.deviceNode}</div>
+                        <div className="text-xs font-mono text-slate-400">UID: {log.nodeUid}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <Badge variant="critical" className="bg-red-50 text-red-700 border-red-200"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> Threat Detected</Badge>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-red-700 text-base">Predatory Grooming</div>
-                  <div className="text-xs text-slate-500">Stage 2: Coercion, Isolation & Secrecy (Hinglish/En)</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">91.4% <ShieldAlert size={14} className="text-red-500"/></div>
-                  <div className="text-xs text-slate-500">XGBoost TF-IDF (Edge)</div>
-                </td>
-                <td className="px-5 py-4">
-                  <button className="mx-auto w-24 flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors">
-                     <span className="text-[10px] font-bold text-slate-600 leading-tight text-center">Click to Shroud Inspect</span>
-                     <Eye size={12} className="text-slate-500" />
-                     <span className="text-[9px] text-slate-400 font-mono">(30s)</span>
-                  </button>
-                </td>
-              </tr>
-
-              {/* Row 2: Warning */}
-              <tr className="hover:bg-slate-50 transition-colors bg-amber-50/10">
-                <td className="px-5 py-4">
-                  <div className="font-semibold text-slate-900">11:05:44 IST</div>
-                  <div className="text-xs text-slate-500">Today • 03 May</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex items-start gap-2">
-                    <Smartphone size={14} className="text-blue-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-slate-900">Aarav's Galaxy A54</div>
-                      <div className="text-xs font-mono text-slate-400">UID: SM-A546E-01</div>
+                  </td>
+                  <td className="px-5 py-4">
+                    <Badge variant={log.badgeVariant} className={log.badgeClass}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${log.badgeDot}`}></div> {log.badgeLabel}
+                    </Badge>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className={`font-bold text-base ${log.titleColor}`}>{log.title}</div>
+                    <div className="text-xs text-slate-500">{log.description}</div>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className={`font-bold flex items-center gap-1.5 ${log.titleColor}`}>
+                      {log.score} {log.badgeVariant === 'critical' && <ShieldAlert size={14} className="text-red-500"/>}
                     </div>
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <Badge variant="warning" className="bg-amber-50 text-amber-800 border-amber-200"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Flagged Content</Badge>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-slate-900 text-base">Cyberbullying & Exclusion</div>
-                  <div className="text-xs text-slate-500">Repeated aggressive group targeting</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">74.0%</div>
-                  <div className="text-xs text-slate-500">XGBoost Hinglish Model</div>
-                </td>
-                <td className="px-5 py-4">
-                  <button className="mx-auto w-24 flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors">
-                     <span className="text-[10px] font-bold text-slate-600 leading-tight text-center">Click to Shroud Inspect</span>
-                     <Eye size={12} className="text-slate-500" />
-                  </button>
-                </td>
-              </tr>
-
-              {/* Row 3: Normal */}
-              <tr className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-4">
-                  <div className="font-semibold text-slate-900">08:30:12 IST</div>
-                  <div className="text-xs text-slate-500">Today • 03 May</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex items-start gap-2">
-                    <Smartphone size={14} className="text-blue-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-slate-900">Aarav's Galaxy A54</div>
-                      <div className="text-xs font-mono text-slate-400">UID: SM-A546E-01</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <Badge variant="success" className="bg-emerald-50 text-emerald-700 border-emerald-200"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Daemon Health</Badge>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-slate-900 text-base">Accessibility Service Ping</div>
-                  <div className="text-xs text-slate-500">Android 14 Accessibility Daemon Responsive</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-emerald-600">Heuristic OK</div>
-                </td>
-                <td className="px-5 py-4 text-center">
-                  <span className="text-xs text-slate-400 italic">No Payload<br/>(Ping Only)</span>
-                </td>
-              </tr>
-
-              {/* Row 4: Info */}
-              <tr className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-4">
-                  <div className="font-semibold text-slate-900">18:40:02 IST</div>
-                  <div className="text-xs text-slate-500">Yesterday • 02 May</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex items-start gap-2">
-                    <Smartphone size={14} className="text-blue-600 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-slate-900">Aarav's Galaxy A54</div>
-                      <div className="text-xs font-mono text-slate-400">UID: SM-A546E-01</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <Badge className="bg-blue-50 text-blue-700 border-blue-200"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> Prevention Hook</Badge>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-slate-900 text-base">Contact Solicitation Attempt</div>
-                  <div className="text-xs text-slate-500">Roblox in-game chat external link request</div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-bold text-slate-900">62.0%</div>
-                  <div className="text-xs text-slate-500">Local Regex Hook</div>
-                </td>
-                <td className="px-5 py-4 text-center">
-                  <span className="text-xs font-semibold text-blue-600">Deflected<br/>Pre-Transmit</span>
-                </td>
-              </tr>
+                    <div className="text-xs text-slate-500">{log.engine}</div>
+                  </td>
+                  <td className="px-5 py-4">
+                    <button className="mx-auto w-24 flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors">
+                       <span className="text-[10px] font-bold text-slate-600 leading-tight text-center">Click to Shroud Inspect</span>
+                       <Eye size={12} className="text-slate-500" />
+                       <span className="text-[9px] text-slate-400 font-mono">(30s)</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              
+              {logs.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-5 py-8 text-center text-slate-500">
+                    No audit logs available. Awaiting telemetry...
+                  </td>
+                </tr>
+              )}
 
             </tbody>
           </table>
