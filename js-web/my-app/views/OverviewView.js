@@ -8,145 +8,54 @@ import {
 } from 'lucide-react';
 import { Card, Button, Badge } from '../components/ui';
 
-// Incident data for each alert
-const incidents = [
+import { db } from '../lib/firebase';
+import { collectionGroup, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
+
+// Fallback incident data for empty state
+const defaultIncidents = [
   {
-    id: 'instagram',
-    // Card data
-    platform: 'Instagram Direct',
-    platformIcon: 'MessageCircle',
-    platformIconColor: 'text-blue-600',
-    time: '14:22 PM Today',
-    tagLabel: 'Grooming Pattern',
-    tagBg: 'bg-red-50 border-red-100 text-red-700',
-    tagDot: true,
-    statusLabel: 'Reviewing Now',
-    statusStyle: 'bg-blue-600 text-white shadow-sm',
-    statusIcon: true,
-    title: 'Isolation Attempt & Grooming Pattern',
-    description: 'A non-mutual adult account repeatedly solicited child migration to an unmoderated Discord voice server with explicit instructions to conceal communication from parents.',
-    indicators: [
-      { icon: 'UserX', color: 'text-red-500', label: 'Unknown adult contact' },
-      { icon: 'ExternalLink', color: 'text-amber-500', label: 'Off-platform migration request' },
-      { icon: 'Lock', color: 'text-red-500', label: 'Secrecy cue detected' },
-    ],
-    confidence: 91,
-    confidenceColor: 'bg-red-500',
-    confidenceTextColor: 'text-red-600',
-    confidenceLabel: '91% (XGBoost)',
-    footerAction: 'Focused in Inspector',
-    footerStyle: 'text-blue-600 font-semibold',
-    // Inspector data
-    incidentId: '#ALT-8921B',
-    classification: 'Predatory Grooming • Stage 2 (Isolation & Secrecy)',
-    classificationColor: 'text-red-600',
-    mlConfidence: '91.4%',
-    mlConfidenceColor: 'text-red-600',
-    mlBarColor: 'bg-red-500',
-    mlBarWidth: '91.4%',
-    classifier: 'FastAPI TF-IDF + XGBoost',
-    latency: '14.8ms',
-    sender: '@stranger_k99',
-    recipient: 'Aarav',
-    messageType: 'Direct Message',
-    originalText: '\u201cGhar pe kisi ko mat batana, tu mere sath Discord pe aaja... parents ko pata chala toh problem hogi.\u201d',
-    translation: '\u201cDon\u2019t tell anyone at home, join me on Discord... if parents find out it will cause problems.\u201d',
-    recommendations: [
-      { step: 1, title: 'Calm Dialogue:', detail: 'Talk to Aarav without punitive tone or device confiscation to prevent conversational withdrawal.' },
-      { step: 2, title: 'Handle Quarantine:', detail: 'Block @stranger_k99 across Aarav\u2019s linked accounts immediately.', code: '@stranger_k99' },
-      { step: 3, title: 'Secure Evidence:', detail: 'Audit payload signature generated with local timestamp hash for official reporting.' },
-    ],
-  },
-  {
-    id: 'whatsapp',
-    platform: 'WhatsApp Group',
-    platformIcon: 'Users',
+    id: 'placeholder',
+    platform: 'Monitoring Active',
+    platformIcon: 'ShieldCheck',
     platformIconColor: 'text-emerald-600',
-    time: '11:05 AM Today',
-    tagLabel: 'Exclusion Tactic',
-    tagBg: 'bg-amber-50 border-amber-100 text-amber-700',
+    time: 'Live',
+    tagLabel: 'Secure',
+    tagBg: 'bg-emerald-50 border-emerald-100 text-emerald-700',
     tagDot: false,
-    statusLabel: 'Reviewed \u2022 Low escalation',
+    statusLabel: 'No Threats Detected',
     statusStyle: 'bg-slate-100 text-slate-600',
-    statusIcon: false,
-    title: 'Targeted Exclusion & Cyberbullying',
-    description: 'Repeated toxic phrase clustering ("don\'t invite him", "kick out") flagged in 8th Grade Study Group.',
-    indicators: [],
-    confidence: 74,
-    confidenceColor: 'bg-amber-500',
-    confidenceTextColor: 'text-amber-600',
-    confidenceLabel: '74%',
-    footerAction: 'View Cached Trace',
-    footerStyle: 'text-slate-500 hover:text-blue-600',
-    // Inspector data
-    incidentId: '#ALT-7734C',
-    classification: 'Cyberbullying \u2022 Group Exclusion Tactic',
-    classificationColor: 'text-amber-600',
-    mlConfidence: '74.2%',
-    mlConfidenceColor: 'text-amber-600',
-    mlBarColor: 'bg-amber-500',
-    mlBarWidth: '74.2%',
-    classifier: 'FastAPI TF-IDF + XGBoost',
-    latency: '11.2ms',
-    sender: 'Class Group (8th Grade Study)',
-    recipient: 'Aarav (targeted)',
-    messageType: 'Group Chat',
-    originalText: '\u201cUsko group se nikaal do... woh aayega toh hum log nahi aayenge. Usko mat invite karo.\u201d',
-    translation: '\u201cRemove him from the group... if he comes, we won\u2019t come. Don\u2019t invite him.\u201d',
-    recommendations: [
-      { step: 1, title: 'Empathetic Conversation:', detail: 'Ask Aarav about his friend group dynamics without being accusatory. Validate his feelings about exclusion.' },
-      { step: 2, title: 'Document Pattern:', detail: 'Monitor recurring exclusion language across group chats over the next 48 hours for escalation assessment.' },
-      { step: 3, title: 'School Liaison:', detail: 'If pattern persists, consider confidential outreach to school counselor with anonymized evidence digest.' },
-    ],
-  },
-  {
-    id: 'roblox',
-    platform: 'Roblox In-Game Chat',
-    platformIcon: 'Gamepad2',
-    platformIconColor: 'text-slate-500',
-    time: 'Yesterday 18:40',
-    tagLabel: 'Solicitation',
-    tagBg: 'bg-slate-100 border-slate-200 text-slate-700',
-    tagDot: false,
-    statusLabel: 'Auto-deflected by Edge',
-    statusStyle: 'bg-emerald-50 border-emerald-100 text-emerald-700',
     statusIcon: true,
     statusIconComponent: 'CheckCheck',
-    title: 'Contact Info Solicitation (Phone / Location)',
-    description: 'Regex filter blocked phone number request in sandbox gaming session. Zero personal data disclosed.',
+    title: 'Everything looks safe',
+    description: 'SafeNET is actively analyzing incoming messages. Any flagged threats will appear here in real-time.',
     indicators: [],
-    confidence: 62,
-    confidenceColor: 'bg-blue-600',
-    confidenceTextColor: 'text-slate-600',
-    confidenceLabel: '62%',
-    footerAction: 'Session Closed',
+    confidence: 100,
+    confidenceColor: 'bg-emerald-500',
+    confidenceTextColor: 'text-emerald-600',
+    confidenceLabel: 'Safe',
+    footerAction: 'System Healthy',
     footerStyle: 'text-slate-500',
     isFooterStatic: true,
-    // Inspector data
-    incidentId: '#ALT-6201D',
-    classification: 'Contact Solicitation \u2022 Auto-Deflected (Resolved)',
+    incidentId: '#SYS-OK',
+    classification: 'System Health • All Clear',
     classificationColor: 'text-emerald-600',
-    mlConfidence: '62.1%',
-    mlConfidenceColor: 'text-slate-600',
-    mlBarColor: 'bg-blue-600',
-    mlBarWidth: '62.1%',
-    classifier: 'Regex + XGBoost Ensemble',
-    latency: '8.4ms',
-    sender: 'RobloxUser_xK47z',
-    recipient: 'Aarav',
-    messageType: 'In-Game Chat',
-    originalText: '\u201cBro what\u2019s your number? Let\u2019s play on call. Which area you live in? I\u2019m near Andheri.\u201d',
+    mlConfidence: '100%',
+    mlConfidenceColor: 'text-emerald-600',
+    mlBarColor: 'bg-emerald-500',
+    mlBarWidth: '100%',
+    classifier: 'System Status',
+    latency: '0ms',
+    sender: 'SafeNET Engine',
+    recipient: 'Dashboard',
+    messageType: 'Status',
+    originalText: 'Monitoring all traffic securely.',
     translation: null,
-    recommendations: [
-      { step: 1, title: 'Acknowledge Auto-Block:', detail: 'The edge filter successfully intercepted and scrambled the contact solicitation. No further action required.' },
-      { step: 2, title: 'Educate on Boundaries:', detail: 'Use this as a teaching moment \u2014 discuss why sharing phone numbers or location with online strangers is risky.' },
-      { step: 3, title: 'Review Friend List:', detail: 'Periodically audit Aarav\u2019s Roblox friend list for unknown or suspicious accounts.' },
-    ],
-  },
+    recommendations: [],
+  }
 ];
 
 const PlatformIcon = ({ name, className }) => {
-  const icons = { MessageCircle, Users, Gamepad2 };
+  const icons = { MessageCircle, Users, Gamepad2, ShieldCheck };
   const Icon = icons[name];
   return Icon ? <Icon size={14} className={className} /> : null;
 };
@@ -158,14 +67,97 @@ const IndicatorIcon = ({ name, className }) => {
 };
 
 export function OverviewView() {
+  const [incidents, setIncidents] = useState(defaultIncidents);
   const [isShrouded, setIsShrouded] = useState(true);
   const [countdown, setCountdown] = useState(30);
   const [appsFrozen, setAppsFrozen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [isRecommendationOpen, setIsRecommendationOpen] = useState(false);
-  const [selectedIncidentId, setSelectedIncidentId] = useState('instagram');
+  const [selectedIncidentId, setSelectedIncidentId] = useState('placeholder');
 
-  const selectedIncident = incidents.find(i => i.id === selectedIncidentId);
+  useEffect(() => {
+    // Listen to all threat events across all users in real-time
+    const q = query(
+      collectionGroup(db, 'threat_events'),
+      orderBy('timestamp', 'desc'),
+      limit(20)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) {
+        setIncidents(defaultIncidents);
+        setSelectedIncidentId('placeholder');
+        return;
+      }
+
+      const fetchedIncidents = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const timestamp = data.timestamp?.toDate();
+        const timeString = timestamp 
+          ? timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          : 'Just now';
+          
+        const isToxic = data.risk_level === 'HIGH' || data.risk_level === 'MEDIUM';
+        const isBedtime = data.isBedtimeMuted === true;
+
+        return {
+          id: doc.id,
+          platform: data.senderApp || 'Unknown App',
+          platformIcon: 'MessageCircle',
+          platformIconColor: isToxic ? 'text-red-600' : 'text-slate-600',
+          time: timeString,
+          tagLabel: isBedtime ? 'Bedtime Muted' : data.risk_level || 'Flagged',
+          tagBg: isToxic ? 'bg-red-50 border-red-100 text-red-700' : 'bg-amber-50 border-amber-100 text-amber-700',
+          tagDot: isToxic,
+          statusLabel: isBedtime ? 'Silently Logged' : 'Needs Review',
+          statusStyle: isToxic ? 'bg-red-600 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm',
+          statusIcon: true,
+          title: 'Incoming Threat Detected',
+          description: data.text || 'No text provided.',
+          indicators: [],
+          confidence: 85,
+          confidenceColor: isToxic ? 'bg-red-500' : 'bg-amber-500',
+          confidenceTextColor: isToxic ? 'text-red-600' : 'text-amber-600',
+          confidenceLabel: 'AI Detected',
+          footerAction: 'Focus in Inspector',
+          footerStyle: 'text-blue-600 font-semibold',
+          // Inspector Data
+          incidentId: `#${doc.id.substring(0,6).toUpperCase()}`,
+          classification: `Threat Level • ${data.risk_level}`,
+          classificationColor: isToxic ? 'text-red-600' : 'text-amber-600',
+          mlConfidence: 'High',
+          mlConfidenceColor: isToxic ? 'text-red-600' : 'text-amber-600',
+          mlBarColor: isToxic ? 'bg-red-500' : 'bg-amber-500',
+          mlBarWidth: '85%',
+          classifier: 'FastAPI Cyberbully Model',
+          latency: 'Live',
+          sender: 'Unknown User',
+          recipient: 'Monitored Device',
+          messageType: 'Intercepted Text',
+          originalText: data.text || '',
+          translation: null,
+          recommendations: [
+            { step: 1, title: 'Check on Child:', detail: 'Ensure the child is safe and not overwhelmed.' },
+            { step: 2, title: 'Review Context:', detail: 'Check the device for surrounding chat context.' }
+          ],
+        };
+      });
+
+      setIncidents(fetchedIncidents);
+      
+      // Auto-select the first one if the currently selected one is gone or it's placeholder
+      setSelectedIncidentId(currentId => {
+        if (currentId === 'placeholder' || !fetchedIncidents.find(i => i.id === currentId)) {
+          return fetchedIncidents[0].id;
+        }
+        return currentId;
+      });
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const selectedIncident = incidents.find(i => i.id === selectedIncidentId) || incidents[0];
 
   // Handle privacy shroud countdown
   useEffect(() => {

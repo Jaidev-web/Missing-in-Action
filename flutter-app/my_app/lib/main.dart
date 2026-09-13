@@ -120,6 +120,7 @@ class GuardrailEngine {
           'senderApp': senderApp,
           'text': text,
           'risk_level': result['risk_level'],
+          'threat_score': result['threat_score'],
           'isBedtimeMuted': isBedtime, // Flag it so the dashboard knows it was muted
         });
         
