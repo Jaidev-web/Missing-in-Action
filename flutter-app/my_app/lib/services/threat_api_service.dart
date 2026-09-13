@@ -28,7 +28,7 @@ class ThreatApiService {
   }) async {
     final headers = await _getHeaders();
     final response = await http.post(
-      Uri.parse("$baseUrl/predict"),
+      Uri.parse("$baseUrl/analyze-threat"),
       headers: headers,
       body: jsonEncode({
         "text": text,

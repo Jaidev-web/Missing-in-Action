@@ -77,7 +77,11 @@ class GuardrailEngine {
 
   Future<void> _sendToFastAPI(String text, String senderApp) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    debugPrint("🔔 Listener fired. User is: ${user?.uid}");
+    if (user == null) {
+      debugPrint("❌ User is null, aborting FastAPI call!");
+      return;
+    }
     
     try {
       // 1. Fetch live user settings to check Shield and Bedtime Mode
