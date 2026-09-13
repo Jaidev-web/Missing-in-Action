@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
@@ -25,10 +26,15 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _authService.signInWithEmailPassword(
+      final userCredential = await _authService.signInWithEmailPassword(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
+      
+      // Save child ID for native Kotlin background service
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('child_id', userCredential.user?.uid ?? 'demo_child_01');
+
       // Navigation is handled by AuthGate
     } on FirebaseAuthException catch (e) {
       setState(() {
