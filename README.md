@@ -35,7 +35,7 @@ The Parent App serves as the command center for parents or guardians, providing 
 📥 App Installation & Setup Guide
 To get the Bal Suraksha Parent/Child Companion App up and running on your device, follow these steps after downloading the build:
 
-Download Link:https://api.codemagic.io/artifacts/.eJwVwc2SgiAAAOB36e5Mq_TjoYNFLKRmaZrrhXE1QayEUSp5-p39vhnz_m2VFMCitPIDFgIl1hTjK2O6_SIO6jhcwGjifKjd6mNWkRZSIbSTi9cKLE8GHIZHa-1EPklsO9EYFSohtZ_RfXcOGj-D_twkKb8iksTBFuDeLNsgE2X_0k1onUouj4t8IhftulohE9xuTjNAyIh4FvYHNe5ZGZqf81pG7kjNsWsrFk3kDjwxVCRL-33hl7dSh7uTf33H6dIh77i-_MBn6yWYjytpwsLcE9h7lkLbQ8XnmLvHB6masSsF_caxaFI9yLc-2Ekq1o9cQ2b_AmrVl4-32cz-AEDEZCw.nrydqgs95mBtDGk0buMwc2SVuHc
+Download Link: https://api.codemagic.io/artifacts/.eJwVwc2SgiAAAOB36e5Mq_TjoYNFLKRmaZrrhXE1QayEUSp5-p39vhnz_m2VFMCitPIDFgIl1hTjK2O6_SIO6jhcwGjifKjd6mNWkRZSIbSTi9cKLE8GHIZHa-1EPklsO9EYFSohtZ_RfXcOGj-D_twkKb8iksTBFuDeLNsgE2X_0k1onUouj4t8IhftulohE9xuTjNAyIh4FvYHNe5ZGZqf81pG7kjNsWsrFk3kDjwxVCRL-33hl7dSh7uTf33H6dIh77i-_MBn6yWYjytpwsLcE9h7lkLbQ8XnmLvHB6masSsF_caxaFI9yLc-2Ekq1o9cQ2b_AmrVl4-32cz-AEDEZCw.nrydqgs95mBtDGk0buMwc2SVuHc
 
 Accessibility Shield: Go to Accessibility settings on your device and turn on the Digital Guardrail ScreenShield. If it shows a “Restricted - Access Required” prompt, enable restricted permissions first.
 
