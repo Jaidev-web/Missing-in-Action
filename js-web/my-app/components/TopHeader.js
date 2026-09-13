@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Smartphone, ChevronDown, Bell, ShieldAlert, ArrowRight, X } from 'lucide-react';
 import { Button } from './ui';
 
-export function TopHeader() {
+export function TopHeader({ onLogout }) {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef(null);
 
@@ -59,54 +59,46 @@ export function TopHeader() {
 
           {/* Notification Dropdown Panel */}
           {isNotifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[420px] bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
-              {/* Dropdown Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-slate-900">Notifications</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500 text-white font-bold">1</span>
-                </div>
-                <button 
-                  onClick={() => setIsNotifOpen(false)}
-                  className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  <X size={16} />
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50">
+              {/* Header */}
+              <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <span className="font-semibold text-slate-900">Priority Alerts</span>
+                <button onClick={() => setIsNotifOpen(false)}>
+                  <X size={16} className="text-slate-400 hover:text-slate-600" />
                 </button>
               </div>
 
-              {/* Notification Card */}
-              <div className="p-3">
-                <div className="bg-red-50 rounded-lg p-3.5 border border-red-100">
-                  <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-white border border-red-100 flex items-center justify-center text-red-600 shadow-sm flex-shrink-0">
-                      <ShieldAlert size={20} className="animate-pulse" />
+              {/* List */}
+              <div className="max-h-[320px] overflow-y-auto">
+                {/* Alert 1 */}
+                <div className="p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
+                  <div className="shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
+                      <ShieldAlert size={16} className="text-red-600" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-sm font-semibold text-slate-900 leading-tight">Action Required: 1 High-Risk Incident Detected</span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap mb-2">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-600 text-white font-semibold uppercase tracking-wider">
-                          High Severity Threat
-                        </span>
-                        <span className="text-[11px] font-mono text-slate-500">Detected 8 mins ago • Aarav's A54</span>
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                        Local edge heuristics flagged predatory grooming markers in incoming direct messages. Zero unencrypted communication left the child's device.
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" className="h-7 text-[11px] font-semibold bg-white px-3">
-                          Acknowledge
-                        </Button>
-                        <Button variant="destructive" className="h-7 text-[11px] font-semibold gap-1 px-3 shadow-sm">
-                          Triage Incident <ArrowRight size={12} />
-                        </Button>
-                      </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900 leading-tight">Predatory Grooming Detected</h4>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">High confidence match for Stage 2 isolation techniques on Instagram Direct.</p>
+                    <span className="text-[10px] font-medium text-slate-400 mt-2 block">14:22 PM</span>
+                  </div>
+                </div>
+
+                {/* Alert 2 */}
+                <div className="p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
+                  <div className="shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
+                      <ShieldAlert size={16} className="text-amber-600" />
                     </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900 leading-tight">Repeated Toxic Language</h4>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">Exclusion phrases detected in WhatsApp "8th Grade Study Group".</p>
+                    <span className="text-[10px] font-medium text-slate-400 mt-2 block">11:05 AM</span>
                   </div>
                 </div>
               </div>
-
+              
               {/* Footer */}
               <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/30">
                 <button className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors w-full text-center">
@@ -119,12 +111,12 @@ export function TopHeader() {
 
         <div className="h-8 w-px bg-slate-200 mx-2"></div>
 
-        <div className="flex items-center gap-3 cursor-pointer">
+        <div className="flex items-center gap-3 cursor-pointer group">
           <div className="flex flex-col text-right leading-tight">
             <span className="text-sm font-semibold text-slate-900">Rajesh Sharma</span>
             <span className="text-xs text-slate-500">Primary Guardian</span>
           </div>
-          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-slate-200">
+          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-slate-200 group-hover:border-blue-400 transition-colors">
             <Image
               src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
               alt="Rajesh Sharma"
@@ -134,6 +126,14 @@ export function TopHeader() {
             />
           </div>
         </div>
+        {onLogout && (
+          <button 
+            onClick={onLogout}
+            className="ml-2 text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium px-2 py-1 rounded-md hover:bg-slate-100"
+          >
+            Logout
+          </button>
+        )}
       </div>
 
     </header>

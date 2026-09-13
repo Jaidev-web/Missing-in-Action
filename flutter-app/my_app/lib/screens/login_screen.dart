@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../theme/app_colors.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
@@ -18,8 +19,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isScanning = false;
 
-  Future<void> _login() async {
+  Future<void> _handleScan(BarcodeCapture capture) async {
+    final List<Barcode> barcodes = capture.barcodes;
+    for (final barcode in barcodes) {
+      if (barcode.rawValue != null) {
+        final parentUid = barcode.rawValue!;
+        
+        setState(() {
+          _isScanning = false;
+          _isLoading = true;
+        });
+
+        try {
+          // Sign in anonymously to bypass the auth gate
+          await FirebaseAuth.instance.signInAnonymously();
+          
+          // Save the Parent UID for the Kotlin Background service!
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('child_id', parentUid);
+          
+          // Login successful, auth gate will route to home
+        } catch (e) {
+          setState(() {
+            _errorMessage = "Failed to link with parent: $e";
+            _isLoading = false;
+          });
+        }
+        break; // Only process the first barcode
+      }
+    }
+  }
+
+  Future<void> _handleLogin() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -133,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _isLoading ? null : _login,
+                onPressed: _isLoading || _isScanning ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -160,7 +193,54 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              
+              if (_isScanning)
+                Container(
+                  height: 300,
+                  margin: const EdgeInsets.symmetric(vertical: 16),
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Stack(
+                    children: [
+                      MobileScanner(
+                        onDetect: _handleScan,
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: () => setState(() => _isScanning = false),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              else
+                OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isScanning = true;
+                    });
+                  },
+                  icon: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
+                  label: const Text(
+                    'Scan Parent QR Code',
+                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(color: AppColors.primary, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
                   Navigator.push(

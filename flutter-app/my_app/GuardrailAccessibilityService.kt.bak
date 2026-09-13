@@ -14,7 +14,6 @@ import android.util.Log
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class GuardrailAccessibilityService : AccessibilityService() {
 
