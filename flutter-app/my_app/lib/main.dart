@@ -62,17 +62,8 @@ class GuardrailEngine {
   }
 
   void _processTextZeroPersistence(String text, {String source = 'unknown', String senderApp = 'unknown'}) {
-    // 1. Check local Regex
-    if (threatRegex.hasMatch(text)) {
-      debugPrint(
-        "🚨 SUSPICIOUS PATTERN DETECTED LOCALLY ($source). Sending to Cloud AI.",
-      );
-      _sendToFastAPI(text, senderApp);
-    } else {
-      // 2. ZERO PERSISTENCE: If safe, do nothing. 
-      // The 'text' variable will be instantly garbage collected.
-      debugPrint("Chat is safe ($source). Ignoring.");
-    }
+    debugPrint("📱 Captured text from $senderApp. Sending to Cloud AI...");
+    _sendToFastAPI(text, senderApp);
   }
 
   Future<void> _sendToFastAPI(String text, String senderApp) async {
