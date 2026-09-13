@@ -27,13 +27,15 @@ class HomeScreen extends StatelessWidget {
         final bool isShieldActive = data['realTimeShield'] ?? true;
         final List guardians = data['guardians'] ?? [];
         final bool isLinked = guardians.isNotEmpty;
+        final String name = data['name'] ?? 'Alex';
+        final String? profilePicUrl = data['profilePicUrl'];
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _Greeting(),
+              _Greeting(name: name, profilePicUrl: profilePicUrl),
               const SizedBox(height: 16),
               const _StatusGlow(),
               const SizedBox(height: 16),
@@ -86,25 +88,30 @@ class HomeScreen extends StatelessWidget {
 
 
 class _Greeting extends StatelessWidget {
+  final String name;
+  final String? profilePicUrl;
+
+  const _Greeting({required this.name, this.profilePicUrl});
+
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Hi Alex, you're safe here ",
-                style: TextStyle(
+                "Hi $name, you're safe here ",
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.text,
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
+              const SizedBox(height: 4),
+              const Text(
                 'Your phone is quiet and protected today.',
                 style: TextStyle(
                   fontSize: 14,
@@ -120,8 +127,16 @@ class _Greeting extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primaryTint.withOpacity(0.6),
             shape: BoxShape.circle,
+            image: profilePicUrl != null && profilePicUrl!.isNotEmpty
+                ? DecorationImage(
+                    image: NetworkImage(profilePicUrl!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
           ),
-          child: const Icon(Icons.air_rounded, color: AppColors.primary),
+          child: profilePicUrl != null && profilePicUrl!.isNotEmpty
+              ? null
+              : const Icon(Icons.air_rounded, color: AppColors.primary),
         ),
       ],
     );
@@ -176,10 +191,14 @@ class _StatusGlow extends StatelessWidget {
                   ],
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: 176,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
                     width: 64,
                     height: 64,
                     margin: const EdgeInsets.only(bottom: 16),
@@ -547,26 +566,6 @@ class _CounselorCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _GhostButton(
-                      icon: Icons.campaign_rounded,
-                      label: 'Emergency SOS',
-                      onTap: _triggerEmergencySos,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _GhostButton(
-                      icon: Icons.history_rounded,
-                      label: 'Quick Safe Exit',
-                      onTap: _quickSafeExit,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

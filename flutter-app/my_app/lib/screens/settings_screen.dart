@@ -49,16 +49,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         final data = snapshot.data?.data() ?? {};
         final String _name = data['name'] ?? 'Alex M.';
-        final String _grade = data['grade'] ?? 'Gr. 9';
+        
+        // Support legacy 'grade' field but default to a numeric age
+        String rawAge = (data['age'] ?? data['grade'] ?? '14').toString();
+        // Extract just the numbers so if they typed 'Gr. 9' before, it becomes '9'
+        rawAge = rawAge.replaceAll(RegExp(r'[^0-9]'), '');
+        if (rawAge.isEmpty) rawAge = '14';
+        
+        final String _displayAge = 'Age $rawAge';
+
         final bool _realTimeShield = data['realTimeShield'] ?? true;
         final bool _autoBlur = data['autoBlur'] ?? true;
         final bool _bedtimeMode = data['bedtimeMode'] ?? true;
         final bool _panicGesture = data['panicGesture'] ?? true;
-        final List<String> _guardians = List<String>.from(data['guardians'] ?? ["Mom's Phone", "Father's Phone"]);
+        final String _panicGestureType = data['panicGestureType'] ?? 'Triple-click the power button';
+        final List<String> _guardians = List<String>.from(data['guardians'] ?? []);
 
         void _editProfile() {
           final nameController = TextEditingController(text: _name);
-          final gradeController = TextEditingController(text: _grade);
+          final ageController = TextEditingController(text: rawAge);
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -71,8 +80,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration: const InputDecoration(labelText: 'Name'),
                   ),
                   TextField(
-                    controller: gradeController,
-                    decoration: const InputDecoration(labelText: 'Grade'),
+                    controller: ageController,
+                    decoration: const InputDecoration(labelText: 'Age'),
+                    keyboardType: TextInputType.number,
                   ),
                 ],
               ),
@@ -84,12 +94,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 TextButton(
                   onPressed: () {
                     _firestoreService.updateSetting('name', nameController.text.trim());
-                    _firestoreService.updateSetting('grade', gradeController.text.trim());
+                    // Clear out old grade field and save new age
+                    _firestoreService.updateSetting('grade', null);
+                    _firestoreService.updateSetting('age', ageController.text.trim());
                     Navigator.pop(context);
                   },
                   child: const Text('Save'),
                 ),
               ],
+            ),
+          );
+        void _editPanicGesture() {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Select Panic Gesture'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: const Text('Triple-click the power button'),
+                    onTap: () {
+                      _firestoreService.updateSetting('panicGestureType', 'Triple-click the power button');
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Shake device vigorously'),
+                    onTap: () {
+                      _firestoreService.updateSetting('panicGestureType', 'Shake device vigorously');
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Tap back of phone 5 times'),
+                    onTap: () {
+                      _firestoreService.updateSetting('panicGestureType', 'Tap back of phone 5 times');
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -101,7 +146,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               _ProfileCard(
                 name: _name,
-                grade: _grade,
+                ageDisplay: _displayAge,
                 onEdit: _editProfile,
               ),
               const SizedBox(height: 32),
@@ -144,7 +189,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 16),
               _PanicGestureCard(
                 panicGesture: _panicGesture,
+                panicGestureType: _panicGestureType,
                 onChanged: (v) => _firestoreService.updateSetting('panicGesture', v),
+                onEdit: _editPanicGesture,
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
@@ -234,12 +281,12 @@ class _CardShell extends StatelessWidget {
 class _ProfileCard extends StatelessWidget {
   const _ProfileCard({
     required this.name,
-    required this.grade,
+    required this.ageDisplay,
     required this.onEdit,
   });
 
   final String name;
-  final String grade;
+  final String ageDisplay;
   final VoidCallback onEdit;
 
   String get initials {
@@ -345,7 +392,7 @@ class _ProfileCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
-                                  grade,
+                                  ageDisplay,
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -468,14 +515,6 @@ class _ShieldControls extends StatelessWidget {
             onChanged: onRealTimeShieldChanged,
           ),
           
-          const SizedBox(height: 24),
-          _ToggleRow(
-            title: 'Auto-Blur Toxic Messages',
-            description:
-                'Softens harsh words until you feel ready to tap and view.',
-            value: autoBlur,
-            onChanged: onAutoBlurChanged,
-          ),
           const SizedBox(height: 24),
           _ToggleRow(
             title: 'Quiet Bedtime Mode 🌙',
@@ -864,11 +903,15 @@ class _GuardianRow extends StatelessWidget {
 class _PanicGestureCard extends StatelessWidget {
   const _PanicGestureCard({
     required this.panicGesture,
+    required this.panicGestureType,
     required this.onChanged,
+    required this.onEdit,
   });
 
   final bool panicGesture;
+  final String panicGestureType;
   final ValueChanged<bool> onChanged;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -898,11 +941,11 @@ class _PanicGestureCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Discreet Panic Gesture',
                             style: TextStyle(
                               fontSize: 15,
@@ -910,12 +953,12 @@ class _PanicGestureCard extends StatelessWidget {
                               color: AppColors.text,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            'Triple-click the power button to instantly '
+                            '$panicGestureType to instantly '
                             'activate a calm, blank decoy screen and ping '
                             'your guardian with live GPS.',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               height: 1.5,
                               color: AppColors.textSubtle,
@@ -929,7 +972,7 @@ class _PanicGestureCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               TextButton(
-                onPressed: () {},
+                onPressed: onEdit,
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surfaceTint,
                   foregroundColor: AppColors.primary,
@@ -967,19 +1010,18 @@ class _PanicGestureCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    if (panicGesture)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: Text(
-                          'ENABLED',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.4,
-                            color: AppColors.secondary,
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Text(
+                        panicGesture ? 'ENABLED' : 'DISABLED',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4,
+                          color: panicGesture ? AppColors.secondary : AppColors.textSubtle,
                         ),
                       ),
+                    ),
                     ToggleSwitch(checked: panicGesture, onChanged: onChanged),
                   ],
                 ),

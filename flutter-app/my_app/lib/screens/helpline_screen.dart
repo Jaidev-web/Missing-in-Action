@@ -61,40 +61,40 @@ class _HelplineScreenState extends State<HelplineScreen> {
   String? _openAccordionId;
   BreathingPhase _breathingPhase = BreathingPhase.inhale;
   bool _breathingPaused = false;
-  Timer? _breathingTimer;
+  Timer? _tickTimer;
+  int _secondsRemaining = 4;
 
   @override
   void initState() {
     super.initState();
-    // Equivalent to the `useEffect(() => { ... ; return () => clearTimeout
-    // }, [])` breathing-cycle effect: runs once when the widget mounts.
-    _scheduleNextBreathingPhase();
+    _startTicker();
   }
 
   @override
   void dispose() {
-    // Equivalent to the effect's cleanup function.
-    _breathingTimer?.cancel();
+    _tickTimer?.cancel();
     super.dispose();
   }
 
-  void _scheduleNextBreathingPhase() {
-    _breathingTimer?.cancel();
-    if (_breathingPaused) return;
-    _breathingTimer = Timer(_breathingPhase.duration, () {
+  void _startTicker() {
+    _tickTimer?.cancel();
+    _tickTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_breathingPaused) return;
       if (!mounted) return;
-      setState(() => _breathingPhase = _breathingPhase.next);
-      _scheduleNextBreathingPhase();
+
+      setState(() {
+        if (_secondsRemaining > 1) {
+          _secondsRemaining--;
+        } else {
+          _breathingPhase = _breathingPhase.next;
+          _secondsRemaining = _breathingPhase.duration.inSeconds;
+        }
+      });
     });
   }
 
   void _togglePauseExercise() {
     setState(() => _breathingPaused = !_breathingPaused);
-    if (_breathingPaused) {
-      _breathingTimer?.cancel();
-    } else {
-      _scheduleNextBreathingPhase();
-    }
   }
 
   void _toggleAccordion(String id) {
@@ -104,7 +104,7 @@ class _HelplineScreenState extends State<HelplineScreen> {
   }
 
   Future<void> _callCrisisLine() async {
-    final uri = Uri(scheme: 'tel', path: '988');
+    final uri = Uri(scheme: 'tel', path: '1098');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }
@@ -141,7 +141,7 @@ class _HelplineScreenState extends State<HelplineScreen> {
             iconBg: AppColors.secondaryTint,
             iconColor: AppColors.secondary,
             title: 'Call 24/7 Crisis...',
-            subtitle: 'Toll-Free • Dial 988 or...',
+            subtitle: 'Toll-Free • Dial 1098 or...',
             actionLabel: 'Call Now',
             actionIcon: Icons.phone_rounded,
             actionBg: AppColors.primaryTint,
@@ -165,6 +165,7 @@ class _HelplineScreenState extends State<HelplineScreen> {
           const SizedBox(height: 16),
           _GroundingExercise(
             phase: _breathingPhase,
+            secondsRemaining: _secondsRemaining,
             paused: _breathingPaused,
             onTogglePause: _togglePauseExercise,
           ),
@@ -520,11 +521,13 @@ class _QuickActionButton extends StatelessWidget {
 class _GroundingExercise extends StatelessWidget {
   const _GroundingExercise({
     required this.phase,
+    required this.secondsRemaining,
     required this.paused,
     required this.onTogglePause,
   });
 
   final BreathingPhase phase;
+  final int secondsRemaining;
   final bool paused;
   final VoidCallback onTogglePause;
 
@@ -587,13 +590,10 @@ class _GroundingExercise extends StatelessWidget {
             height: 192,
             child: Center(
               child: AnimatedScale(
-                // `duration: 4` in the source is the framer-motion
-                // transition for *every* phase change; Flutter's
-                // AnimatedScale applies the same fixed duration whenever
-                // `scale` changes, which is the direct equivalent.
                 scale: phase.scale,
-                duration: const Duration(seconds: 4),
-                curve: Curves.easeInOut,
+                // Match the AnimatedScale duration to the current phase so it sweeps perfectly
+                duration: phase.duration,
+                curve: Curves.linear,
                 child: Container(
                   width: 128,
                   height: 128,
@@ -621,7 +621,7 @@ class _GroundingExercise extends StatelessWidget {
                         ),
                         if (phase.badge.isNotEmpty)
                           Text(
-                            phase.badge,
+                            '${secondsRemaining}s',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
