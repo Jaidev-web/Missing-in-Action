@@ -3,6 +3,8 @@ package com.yourcompany.my_app
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.os.Handler
+import android.os.Looper
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
@@ -18,22 +20,41 @@ class GuardrailAccessibilityService : AccessibilityService() {
         "org.telegram.messenger"
     )
 
+    private val handler = Handler(Looper.getMainLooper())
+    private var pendingRunnable: Runnable? = null
+    private var lastCapturedText: String = ""
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         val packageName = event.packageName?.toString() ?: return
         
         if (targetApps.contains(packageName)) {
-            val rootNode = rootInActiveWindow ?: return
-            val capturedText = StringBuilder()
+            // Cancel any previously scheduled capture
+            pendingRunnable?.let { handler.removeCallbacks(it) }
             
-            extractText(rootNode, capturedText)
-            
-            if (capturedText.isNotEmpty()) {
-                val intent = Intent("GuardrailEvent")
-                intent.putExtra("source", "accessibility")
-                intent.putExtra("text", capturedText.toString())
-                intent.putExtra("senderApp", packageName)
-                LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+            // Schedule a new capture after the screen settles (1 second)
+            pendingRunnable = Runnable {
+                processScreenContent(packageName)
             }
+            handler.postDelayed(pendingRunnable!!, 1000)
+        }
+    }
+
+    private fun processScreenContent(packageName: String) {
+        val rootNode = rootInActiveWindow ?: return
+        val capturedText = StringBuilder()
+        
+        extractText(rootNode, capturedText)
+        val extracted = capturedText.toString().trim()
+        
+        // Only broadcast if the text actually changed
+        if (extracted.isNotEmpty() && extracted != lastCapturedText) {
+            lastCapturedText = extracted
+            
+            val intent = Intent("GuardrailEvent")
+            intent.putExtra("source", "accessibility")
+            intent.putExtra("text", extracted)
+            intent.putExtra("senderApp", packageName)
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         }
     }
 
